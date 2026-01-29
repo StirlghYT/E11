@@ -1,0 +1,14 @@
+{
+  "name": "E11-Bot",
+  "version": "1.0.0",
+  "description": "Bot de equipos Blue Lock Rivals",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Stirlgh",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.15.3"
+  }
+}
