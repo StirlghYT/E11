@@ -8,7 +8,6 @@ const {
   PermissionsBitField
 } = require("discord.js");
 
-const config = require("./config.json");
 
 /* ───────── CLIENTE ───────── */
 const client = new Client({
@@ -187,4 +186,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 /* ───────── LOGIN ───────── */
-client.login(config.token);
+client.login(process.env.TOKEN);
