@@ -135,14 +135,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const equipo = equipos[equipoKey];
     if (!equipo) return;
 
-    const staff = await interaction.guild.members.fetch(interaction.user.id);
+    const staff = interaction.member;
 
-    if (!staff.roles.cache.has(equipo.capitan)) {
-      return interaction.reply({
-        content: "❌ Solo el capitán de este equipo puede decidir.",
-        ephemeral: true
-      });
-    }
+  if (!staff.roles.cache.has(equipo.capitan)) {
+  return interaction.followUp({
+    content: "❌ Solo el capitán de este equipo puede decidir.",
+    ephemeral: true
+  });
+}
+
 
     const miembro = await interaction.guild.members.fetch(userId);
 
