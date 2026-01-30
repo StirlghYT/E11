@@ -8,7 +8,6 @@ const {
   PermissionsBitField
 } = require("discord.js");
 
-
 /* ───────── CLIENTE ───────── */
 const client = new Client({
   intents: [
@@ -58,8 +57,8 @@ client.once(Events.ClientReady, () => {
   console.log(`🤖 Bot conectado como ${client.user.tag}`);
 });
 
-/* ───────── COMANDO !panel (SOLO 1) ───────── */
-client.on("messageCreate", async (message) => {
+/* ───────── COMANDO !panel ───────── */
+client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
   if (message.content !== "!panel") return;
 
@@ -67,43 +66,24 @@ client.on("messageCreate", async (message) => {
     return message.reply("❌ Solo administradores pueden usar este comando.");
   }
 
-  // 🔒 Limitar a 1 panel por canal
-  const mensajes = await message.channel.messages.fetch({ limit: 25 });
-  const panelExiste = mensajes.find(
-    m =>
-      m.author.id === client.user.id &&
-      m.content &&
-      m.content.includes("Selecciona el equipo")
+  const mensajes = await message.channel.messages.fetch({ limit: 20 });
+  const existe = mensajes.find(
+    m => m.author.id === client.user.id && m.content?.includes("Selecciona el equipo")
   );
 
-  if (panelExiste) {
+  if (existe) {
     return message.reply("⚠️ Ya existe un panel en este canal.");
   }
 
   const fila1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("solicitar_bastard")
-      .setLabel("Bastard")
-      .setStyle(ButtonStyle.Danger),
-    new ButtonBuilder()
-      .setCustomId("solicitar_barcha")
-      .setLabel("Barcha")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("solicitar_pxg")
-      .setLabel("PXG")
-      .setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId("solicitar_bastard").setLabel("Bastard").setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId("solicitar_barcha").setLabel("Barcha").setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId("solicitar_pxg").setLabel("PXG").setStyle(ButtonStyle.Secondary)
   );
 
   const fila2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("solicitar_manshine")
-      .setLabel("Manshine City")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId("solicitar_ubers")
-      .setLabel("Ubers")
-      .setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId("solicitar_manshine").setLabel("Manshine City").setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId("solicitar_ubers").setLabel("Ubers").setStyle(ButtonStyle.Primary)
   );
 
   await message.channel.send({
@@ -112,20 +92,22 @@ client.on("messageCreate", async (message) => {
   });
 });
 
-/* ───────── BOTONES ───────── */
+/* ───────── INTERACCIONES ───────── */
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
   /* ───── SOLICITAR ───── */
   if (interaction.customId.startsWith("solicitar_")) {
-    await interaction.deferReply({ ephemeral: true });
-
     const equipoKey = interaction.customId.replace("solicitar_", "");
     const equipo = equipos[equipoKey];
-    if (!equipo) return interaction.editReply("❌ Equipo inválido.");
+    if (!equipo) return;
 
-    const canal = interaction.guild.channels.cache.get(equipo.canal);
-    if (!canal) return interaction.editReply("❌ Canal no encontrado.");
+    await interaction.reply({
+      content: "✅ Tu solicitud fue enviada.",
+      ephemeral: true
+    });
+
+    const canal = await interaction.guild.channels.fetch(equipo.canal);
 
     const botones = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -142,8 +124,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       content: `📩 **Nueva solicitud**\n👤 Usuario: ${interaction.user}\n🛡 Equipo: **${equipo.nombre}**`,
       components: [botones]
     });
-
-    return interaction.editReply("✅ Solicitud enviada correctamente.");
   }
 
   /* ───── ACEPTAR / RECHAZAR ───── */
@@ -151,15 +131,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     interaction.customId.startsWith("aceptar_") ||
     interaction.customId.startsWith("rechazar_")
   ) {
-    await interaction.deferUpdate();
-
     const [, equipoKey, userId] = interaction.customId.split("_");
     const equipo = equipos[equipoKey];
     if (!equipo) return;
 
     const staff = await interaction.guild.members.fetch(interaction.user.id);
+
     if (!staff.roles.cache.has(equipo.capitan)) {
-      return interaction.followUp({
+      return interaction.reply({
         content: "❌ Solo el capitán de este equipo puede decidir.",
         ephemeral: true
       });
@@ -168,16 +147,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const miembro = await interaction.guild.members.fetch(userId);
 
     if (interaction.customId.startsWith("aceptar_")) {
-      if (!miembro.roles.cache.has(equipo.rol)) {
-        await miembro.roles.add(equipo.rol);
-      }
-
-      await interaction.message.edit({
+      await miembro.roles.add(equipo.rol);
+      await interaction.update({
         content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
         components: []
       });
     } else {
-      await interaction.message.edit({
+      await interaction.update({
         content: "❌ Solicitud rechazada.",
         components: []
       });
