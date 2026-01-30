@@ -23,33 +23,33 @@ const client = new Client({
 const equipos = {
   bastard: {
     nombre: "Bastard",
-    rol: config.bastardRoleId,
-    capitan: config.capitanBastardRoleId,
-    canal: config.bastardChannelId
+    rol: "1465201094920769629",
+    capitan: "1465201525197504776",
+    canal: "1465203281469903062"
   },
   barcha: {
     nombre: "Barcha",
-    rol: config.barchaRoleId,
-    capitan: config.capitanBarchaRoleId,
-    canal: config.barchaChannelId
+    rol: "1465201319835865088",
+    capitan: "1465202034637537486",
+    canal: "1465203665907220551"
   },
   pxg: {
     nombre: "PXG",
-    rol: config.pxgRoleId,
-    capitan: config.capitanPxgRoleId,
-    canal: config.pxgChannelId
+    rol: "1465201252752298163",
+    capitan: "1465201854920003716",
+    canal: "1465203468062036060"
   },
   manshine: {
     nombre: "Manshine City",
-    rol: config.manshineRoleId,
-    capitan: config.capitanManshineRoleId,
-    canal: config.manshineChannelId
+    rol: "1465201143348068394",
+    capitan: "1465201654444982315",
+    canal: "1465203352106172446"
   },
   ubers: {
     nombre: "Ubers",
-    rol: config.ubersRoleId,
-    capitan: config.capitanUbersRoleId,
-    canal: config.ubersChannelId
+    rol: "1465201198599508123",
+    capitan: "1465201777816244235",
+    canal: "1465203443919487067"
   }
 };
 
