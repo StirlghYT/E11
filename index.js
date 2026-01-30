@@ -127,40 +127,54 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   /* ───── ACEPTAR / RECHAZAR ───── */
-  if (
-    interaction.customId.startsWith("aceptar_") ||
-    interaction.customId.startsWith("rechazar_")
-  ) {
-    const [, equipoKey, userId] = interaction.customId.split("_");
-    const equipo = equipos[equipoKey];
-    if (!equipo) return;
+if (
+  interaction.customId.startsWith("aceptar_") ||
+  interaction.customId.startsWith("rechazar_")
+) {
+  const [, equipoKey, userId] = interaction.customId.split("_");
+  const equipo = equipos[equipoKey];
+  if (!equipo) return;
 
-    const staff = interaction.member;
+  const staff = interaction.member;
 
+  // ❌ No es capitán
   if (!staff.roles.cache.has(equipo.capitan)) {
-  return interaction.followUp({
-    content: "❌ Solo el capitán de este equipo puede decidir.",
+    return interaction.reply({
+      content: "❌ Solo el capitán de este equipo puede decidir.",
+      ephemeral: true
+    });
+  }
+
+  const miembro = await interaction.guild.members.fetch(userId);
+
+  // ✅ ACEPTAR
+  if (interaction.customId.startsWith("aceptar_")) {
+    if (!miembro.roles.cache.has(equipo.rol)) {
+      await miembro.roles.add(equipo.rol);
+    }
+
+    await interaction.message.edit({
+      content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
+      components: []
+    });
+
+    return interaction.reply({
+      content: "✔️ Decisión registrada.",
+      ephemeral: true
+    });
+  }
+
+  // ❌ RECHAZAR
+  await interaction.message.edit({
+    content: "❌ Solicitud rechazada.",
+    components: []
+  });
+
+  return interaction.reply({
+    content: "✔️ Decisión registrada.",
     ephemeral: true
   });
 }
-
-
-    const miembro = await interaction.guild.members.fetch(userId);
-
-    if (interaction.customId.startsWith("aceptar_")) {
-      await miembro.roles.add(equipo.rol);
-      await interaction.update({
-        content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
-        components: []
-      });
-    } else {
-      await interaction.update({
-        content: "❌ Solicitud rechazada.",
-        components: []
-      });
-    }
-  }
-});
 
 /* ───────── LOGIN ───────── */
 client.login(process.env.TOKEN);
