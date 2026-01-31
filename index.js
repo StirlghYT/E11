@@ -66,9 +66,11 @@ client.on(Events.MessageCreate, async (message) => {
     return message.reply("❌ Solo administradores pueden usar este comando.");
   }
 
+  // Limitar a 1 panel por canal
   const mensajes = await message.channel.messages.fetch({ limit: 20 });
   const existe = mensajes.find(
-    m => m.author.id === client.user.id && m.content?.includes("Selecciona el equipo")
+    m => m.author.id === client.user.id &&
+         m.content?.includes("Selecciona el equipo")
   );
 
   if (existe) {
@@ -76,14 +78,29 @@ client.on(Events.MessageCreate, async (message) => {
   }
 
   const fila1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("solicitar_bastard").setLabel("Bastard").setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId("solicitar_barcha").setLabel("Barcha").setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId("solicitar_pxg").setLabel("PXG").setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder()
+      .setCustomId("solicitar_bastard")
+      .setLabel("Bastard")
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId("solicitar_barcha")
+      .setLabel("Barcha")
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId("solicitar_pxg")
+      .setLabel("PXG")
+      .setStyle(ButtonStyle.Secondary)
   );
 
   const fila2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("solicitar_manshine").setLabel("Manshine City").setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId("solicitar_ubers").setLabel("Ubers").setStyle(ButtonStyle.Primary)
+    new ButtonBuilder()
+      .setCustomId("solicitar_manshine")
+      .setLabel("Manshine City")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId("solicitar_ubers")
+      .setLabel("Ubers")
+      .setStyle(ButtonStyle.Primary)
   );
 
   await message.channel.send({
@@ -96,18 +113,19 @@ client.on(Events.MessageCreate, async (message) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  /* ───── SOLICITAR ───── */
+  /* ───── SOLICITAR EQUIPO ───── */
   if (interaction.customId.startsWith("solicitar_")) {
     const equipoKey = interaction.customId.replace("solicitar_", "");
     const equipo = equipos[equipoKey];
     if (!equipo) return;
 
     await interaction.reply({
-      content: "✅ Tu solicitud fue enviada.",
+      content: "✅ Tu solicitud fue enviada correctamente.",
       ephemeral: true
     });
 
     const canal = await interaction.guild.channels.fetch(equipo.canal);
+    if (!canal) return;
 
     const botones = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -121,60 +139,60 @@ client.on(Events.InteractionCreate, async (interaction) => {
     );
 
     await canal.send({
-      content: `📩 **Nueva solicitud**\n👤 Usuario: ${interaction.user}\n🛡 Equipo: **${equipo.nombre}**`,
+      content:
+        `📩 **Nueva solicitud**\n` +
+        `👤 Usuario: ${interaction.user}\n` +
+        `🛡 Equipo: **${equipo.nombre}**`,
       components: [botones]
     });
+
+    return;
   }
 
   /* ───── ACEPTAR / RECHAZAR ───── */
-if (
-  interaction.customId.startsWith("aceptar_") ||
-  interaction.customId.startsWith("rechazar_")
-) {
-  const [, equipoKey, userId] = interaction.customId.split("_");
-  const equipo = equipos[equipoKey];
-  if (!equipo) return;
+  if (
+    interaction.customId.startsWith("aceptar_") ||
+    interaction.customId.startsWith("rechazar_")
+  ) {
+    const [, equipoKey, userId] = interaction.customId.split("_");
+    const equipo = equipos[equipoKey];
+    if (!equipo) return;
 
-  const staff = interaction.member;
+    const staff = interaction.member;
 
-  // ❌ No es capitán
-  if (!staff.roles.cache.has(equipo.capitan)) {
-    return interaction.reply({
-      content: "❌ Solo el capitán de este equipo puede decidir.",
-      ephemeral: true
-    });
-  }
-
-  const miembro = await interaction.guild.members.fetch(userId);
-
-  // ✅ ACEPTAR
-  if (interaction.customId.startsWith("aceptar_")) {
-    if (!miembro.roles.cache.has(equipo.rol)) {
-      await miembro.roles.add(equipo.rol);
+    // Verificar capitán
+    if (!staff.roles.cache.has(equipo.capitan)) {
+      return interaction.reply({
+        content: "❌ Solo el capitán de este equipo puede decidir.",
+        ephemeral: true
+      });
     }
 
+    const miembro = await interaction.guild.members.fetch(userId);
+
+    // ACEPTAR
+    if (interaction.customId.startsWith("aceptar_")) {
+      if (!miembro.roles.cache.has(equipo.rol)) {
+        await miembro.roles.add(equipo.rol);
+      }
+
+      await interaction.message.edit({
+        content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
+        components: []
+      });
+
+      return;
+    }
+
+    // RECHAZAR
     await interaction.message.edit({
-      content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
+      content: "❌ Solicitud rechazada.",
       components: []
     });
 
-    return interaction.reply({
-      content: "✔️ Decisión registrada.",
-      ephemeral: true
-    });
+    return;
   }
-
-  // ❌ RECHAZAR
-  await interaction.message.edit({
-    content: "❌ Solicitud rechazada.",
-    components: []
-  });
-
-  return interaction.reply({
-    content: "✔️ Decisión registrada.",
-    ephemeral: true
-  });
-}
+}); // ← ESTO ERA CLAVE (NO BORRAR)
 
 /* ───────── LOGIN ───────── */
 client.login(process.env.TOKEN);
