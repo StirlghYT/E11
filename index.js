@@ -149,49 +149,40 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return;
   }
 
-  /* ───── ACEPTAR / RECHAZAR ───── */
-  if (
-    interaction.customId.startsWith("aceptar_") ||
-    interaction.customId.startsWith("rechazar_")
-  ) {
-    const [, equipoKey, userId] = interaction.customId.split("_");
-    const equipo = equipos[equipoKey];
-    if (!equipo) return;
+/* ───── ACEPTAR / RECHAZAR ───── */
+if (
+  interaction.customId.startsWith("aceptar_") ||
+  interaction.customId.startsWith("rechazar_")
+) {
+  const [, equipoKey, userId] = interaction.customId.split("_");
+  const equipo = equipos[equipoKey];
+  if (!equipo) return;
 
-    const staff = interaction.member;
+  const miembro = await interaction.guild.members.fetch(userId);
 
-    // Verificar capitán
-    if (!staff.roles.cache.has(equipo.capitan)) {
-      return interaction.reply({
-        content: "❌ Solo el capitán de este equipo puede decidir.",
-        ephemeral: true
-      });
+  // ✅ ACEPTAR
+  if (interaction.customId.startsWith("aceptar_")) {
+    if (!miembro.roles.cache.has(equipo.rol)) {
+      await miembro.roles.add(equipo.rol);
     }
 
-    const miembro = await interaction.guild.members.fetch(userId);
-
-    // ACEPTAR
-    if (interaction.customId.startsWith("aceptar_")) {
-      if (!miembro.roles.cache.has(equipo.rol)) {
-        await miembro.roles.add(equipo.rol);
-      }
-
-      await interaction.message.edit({
-        content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
-        components: []
-      });
-
-      return;
-    }
-
-    // RECHAZAR
     await interaction.message.edit({
-      content: "❌ Solicitud rechazada.",
+      content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
       components: []
     });
 
     return;
   }
+
+  // ❌ RECHAZAR
+  await interaction.message.edit({
+    content: "❌ Solicitud rechazada.",
+    components: []
+  });
+
+  return;
+}
+
 }); // ← ESTO ERA CLAVE (NO BORRAR)
 
 /* ───────── LOGIN ───────── */
