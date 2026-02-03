@@ -48,7 +48,7 @@ const equipos = {
   losers: {
     nombre: "The Losers",
     rol: "1468038621742239835",
-    canal: "1468038196615974963"
+    canal: "1468111432645087282"
   }
 };
 
