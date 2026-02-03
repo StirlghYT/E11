@@ -23,32 +23,32 @@ const equipos = {
   bastard: {
     nombre: "Bastard",
     rol: "1465201094920769629",
-    capitan: "1465201525197504776",
     canal: "1465906385039397168"
   },
   barcha: {
     nombre: "Barcha",
     rol: "1465201319835865088",
-    capitan: "1465202034637537486",
     canal: "1465906750640095243"
   },
   pxg: {
     nombre: "PXG",
     rol: "1465201252752298163",
-    capitan: "1465201854920003716",
     canal: "1465907043880665303"
   },
   manshine: {
     nombre: "Manshine City",
     rol: "1465201143348068394",
-    capitan: "1465201654444982315",
     canal: "1465907546585039009"
   },
   ubers: {
     nombre: "Ubers",
     rol: "1465201198599508123",
-    capitan: "1465201777816244235",
     canal: "1465906051663794216"
+  },
+  losers: {
+    nombre: "The Losers",
+    rol: "1468038621742239835",
+    canal: "1468038196615974963"
   }
 };
 
@@ -69,8 +69,9 @@ client.on(Events.MessageCreate, async (message) => {
   // Limitar a 1 panel por canal
   const mensajes = await message.channel.messages.fetch({ limit: 20 });
   const existe = mensajes.find(
-    m => m.author.id === client.user.id &&
-         m.content?.includes("Selecciona el equipo")
+    m =>
+      m.author.id === client.user.id &&
+      m.content?.includes("Selecciona el equipo")
   );
 
   if (existe) {
@@ -100,7 +101,11 @@ client.on(Events.MessageCreate, async (message) => {
     new ButtonBuilder()
       .setCustomId("solicitar_ubers")
       .setLabel("Ubers")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId("solicitar_losers")
+      .setLabel("The Losers")
+      .setStyle(ButtonStyle.Secondary)
   );
 
   await message.channel.send({
@@ -145,45 +150,36 @@ client.on(Events.InteractionCreate, async (interaction) => {
         `🛡 Equipo: **${equipo.nombre}**`,
       components: [botones]
     });
-
-    return;
   }
 
-/* ───── ACEPTAR / RECHAZAR ───── */
-if (
-  interaction.customId.startsWith("aceptar_") ||
-  interaction.customId.startsWith("rechazar_")
-) {
-  const [, equipoKey, userId] = interaction.customId.split("_");
-  const equipo = equipos[equipoKey];
-  if (!equipo) return;
+  /* ───── ACEPTAR / RECHAZAR ───── */
+  if (
+    interaction.customId.startsWith("aceptar_") ||
+    interaction.customId.startsWith("rechazar_")
+  ) {
+    const [, equipoKey, userId] = interaction.customId.split("_");
+    const equipo = equipos[equipoKey];
+    if (!equipo) return;
 
-  const miembro = await interaction.guild.members.fetch(userId);
+    const miembro = await interaction.guild.members.fetch(userId);
 
-  // ✅ ACEPTAR
-  if (interaction.customId.startsWith("aceptar_")) {
-    if (!miembro.roles.cache.has(equipo.rol)) {
-      await miembro.roles.add(equipo.rol);
+    if (interaction.customId.startsWith("aceptar_")) {
+      if (!miembro.roles.cache.has(equipo.rol)) {
+        await miembro.roles.add(equipo.rol);
+      }
+
+      await interaction.message.edit({
+        content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
+        components: []
+      });
+    } else {
+      await interaction.message.edit({
+        content: "❌ Solicitud rechazada.",
+        components: []
+      });
     }
-
-    await interaction.message.edit({
-      content: `✅ ${miembro.user} fue aceptado en **${equipo.nombre}**`,
-      components: []
-    });
-
-    return;
   }
-
-  // ❌ RECHAZAR
-  await interaction.message.edit({
-    content: "❌ Solicitud rechazada.",
-    components: []
-  });
-
-  return;
-}
-
-}); // ← ESTO ERA CLAVE (NO BORRAR)
+});
 
 /* ───────── LOGIN ───────── */
 client.login(process.env.TOKEN);
