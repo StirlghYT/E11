@@ -49,6 +49,11 @@ const equipos = {
     nombre: "The Losers",
     rol: "1468038621742239835",
     canal: "1468111432645087282"
+  },
+  realmadrid: {
+    nombre: "Real Madrid",
+    rol: "1468717529450156033",
+    canal: "1468720533326663762"
   }
 };
 
@@ -66,7 +71,6 @@ client.on(Events.MessageCreate, async (message) => {
     return message.reply("❌ Solo administradores pueden usar este comando.");
   }
 
-  // Limitar a 1 panel por canal
   const mensajes = await message.channel.messages.fetch({ limit: 20 });
   const existe = mensajes.find(
     m =>
@@ -79,38 +83,24 @@ client.on(Events.MessageCreate, async (message) => {
   }
 
   const fila1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("solicitar_bastard")
-      .setLabel("Bastard")
-      .setStyle(ButtonStyle.Danger),
-    new ButtonBuilder()
-      .setCustomId("solicitar_barcha")
-      .setLabel("Barcha")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("solicitar_pxg")
-      .setLabel("PXG")
-      .setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId("solicitar_bastard").setLabel("Bastard").setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId("solicitar_barcha").setLabel("Barcha").setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId("solicitar_pxg").setLabel("PXG").setStyle(ButtonStyle.Secondary)
   );
 
   const fila2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("solicitar_manshine")
-      .setLabel("Manshine City")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId("solicitar_ubers")
-      .setLabel("Ubers")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("solicitar_losers")
-      .setLabel("The Losers")
-      .setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId("solicitar_manshine").setLabel("Manshine City").setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId("solicitar_ubers").setLabel("Ubers").setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId("solicitar_losers").setLabel("The Losers").setStyle(ButtonStyle.Secondary)
+  );
+
+  const fila3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId("solicitar_realmadrid").setLabel("Real Madrid").setStyle(ButtonStyle.Primary)
   );
 
   await message.channel.send({
     content: "⚽ **Selecciona el equipo al que quieres unirte**",
-    components: [fila1, fila2]
+    components: [fila1, fila2, fila3]
   });
 });
 
