@@ -50,10 +50,15 @@ const equipos = {
     rol: "1468038621742239835",
     canal: "1468111432645087282"
   },
-  realmadrid: {
-    nombre: "Real Madrid",
-    rol: "1468717529450156033",
-    canal: "1468720533326663762"
+  paradise: {
+    nombre: "Paradise",
+    rol: "1469474793484058646",
+    canal: "1469472023842656368"
+  },
+  femboys: {
+    nombre: "Femboys",
+    rol: "1469475348990132234",
+    canal: "1469473431748739082"
   }
 };
 
@@ -95,7 +100,8 @@ client.on(Events.MessageCreate, async (message) => {
   );
 
   const fila3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId("solicitar_realmadrid").setLabel("Real Madrid").setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId("solicitar_paradise").setLabel("Paradise").setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId("solicitar_femboys").setLabel("Femboys").setStyle(ButtonStyle.Secondary)
   );
 
   await message.channel.send({
@@ -108,7 +114,6 @@ client.on(Events.MessageCreate, async (message) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
-  /* ───── SOLICITAR EQUIPO ───── */
   if (interaction.customId.startsWith("solicitar_")) {
     const equipoKey = interaction.customId.replace("solicitar_", "");
     const equipo = equipos[equipoKey];
@@ -142,7 +147,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  /* ───── ACEPTAR / RECHAZAR ───── */
   if (
     interaction.customId.startsWith("aceptar_") ||
     interaction.customId.startsWith("rechazar_")
